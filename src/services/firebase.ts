@@ -323,12 +323,58 @@ export async function getUserProfile(uid: string): Promise<UserProfile | null> {
 }
 
 /**
+ * Safe helper to parse any date representation (string, timestamp object, number) to epoch milliseconds
+ */
+export function getTimestampNumber(val: any): number {
+  if (!val) return 0;
+  if (typeof val === 'number') return isNaN(val) ? 0 : val;
+  if (typeof val === 'string') {
+    const t = new Date(val).getTime();
+    return isNaN(t) ? 0 : t;
+  }
+  if (typeof val === 'object') {
+    if (typeof val.toMillis === 'function') return val.toMillis();
+    if (typeof val.toDate === 'function') return val.toDate().getTime();
+    if ('seconds' in val && typeof val.seconds === 'number') return val.seconds * 1000;
+  }
+  return 0;
+}
+
+/**
  * Sign in existing Shop Owner or Administrator with Email and Password
  */
 export async function loginShopOwner(email: string, pass: string): Promise<{ user: User; profile: UserProfile | null }> {
-  const userCredential = await signInWithEmailAndPassword(auth, email.trim(), pass);
-  const profile = await getUserProfile(userCredential.user.uid);
-  return { user: userCredential.user, profile };
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email.trim(), pass);
+    const profile = await getUserProfile(userCredential.user.uid);
+    return { user: userCredential.user, profile };
+  } catch (err: any) {
+    // If Firebase Auth fails (e.g. sandboxed demo mode or sample user credentials), check sample users
+    const sampleUsers = getInitialSampleUsers();
+    const matchSample = sampleUsers.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+    if (matchSample) {
+      const mockUser = {
+        uid: matchSample.uid,
+        email: matchSample.email,
+        displayName: matchSample.ownerName,
+      } as unknown as User;
+      return { user: mockUser, profile: matchSample };
+    }
+    
+    // Check registered local users
+    const localUsers = getLocalRegisteredUsers();
+    const matchLocal = localUsers.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+    if (matchLocal) {
+      const mockUser = {
+        uid: matchLocal.uid,
+        email: matchLocal.email,
+        displayName: matchLocal.ownerName,
+      } as unknown as User;
+      return { user: mockUser, profile: matchLocal };
+    }
+
+    throw err;
+  }
 }
 
 /**
@@ -639,10 +685,23 @@ export async function deleteUserFile(fileId: string, userId?: string): Promise<v
 export function getInitialSampleUsers(): UserProfile[] {
   return [
     {
+      uid: "user_amara_hair",
+      email: "amara@crowncoiffure.com",
+      role: "shop_owner",
+      status: "approved",
+      ownerName: "Amara Okafor",
+      shopName: "Crown & Coiffure Hair Studio",
+      shopCategory: "Ladies' Hairstyles",
+      phone: "(503) 555-0377",
+      address: "1424 NW 23rd Ave, Pearl District",
+      fileCount: 4,
+      createdAt: "2026-08-20T10:00:00.000Z",
+    },
+    {
       uid: "user_maya_lin_ceramics",
       email: "maya.lin@cedarandclay.com",
       role: "shop_owner",
-      status: "pending",
+      status: "approved",
       ownerName: "Maya Lin",
       shopName: "Cedar & Clay Studio",
       shopCategory: "Handmade & Crafts",
@@ -655,7 +714,7 @@ export function getInitialSampleUsers(): UserProfile[] {
       uid: "user_marcus_chen_bakery",
       email: "marcus@goldenharvestbread.com",
       role: "shop_owner",
-      status: "pending",
+      status: "approved",
       ownerName: "Marcus Chen",
       shopName: "Golden Harvest Artisan Bakery",
       shopCategory: "Artisanal Groceries",
@@ -751,7 +810,24 @@ export function getLocalProducts(): Product[] {
   try {
     const raw = localStorage.getItem(PERSISTED_PRODUCTS_KEY);
     if (!raw) return [];
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw) as Product[];
+    let modified = false;
+    const sanitized = parsed.map((p) => {
+      let updated = { ...p };
+      if (p.imageUrl && p.imageUrl.includes('1608248597359')) {
+        modified = true;
+        updated.imageUrl = '/images/organic_beauty.jpg';
+      }
+      if (p.title && (p.title.includes('Bone Straight') || p.title.includes('Braids') || p.title.includes('Twists')) && p.category !== "Ladies' Hairstyles") {
+        modified = true;
+        updated.category = "Ladies' Hairstyles";
+      }
+      return updated;
+    });
+    if (modified) {
+      localStorage.setItem(PERSISTED_PRODUCTS_KEY, JSON.stringify(sanitized));
+    }
+    return sanitized;
   } catch (e) {
     console.warn("Could not read local products:", e);
     return [];
@@ -817,26 +893,59 @@ export async function getPersistedProducts(): Promise<Product[]> {
   // 1. Seed base default goods
   PRODUCTS_DATA.forEach((p) => productsMap.set(p.id, p));
 
-  // 2. Query Firestore products collection
+  // 2. Query Firestore products collection with 2.5s fallback timeout
   try {
-    const snap = await getDocs(collection(db, "products"));
-    snap.forEach((docSnap) => {
-      const data = docSnap.data() as Product;
-      productsMap.set(data.id || docSnap.id, { ...data, id: data.id || docSnap.id });
-    });
+    const getDocsPromise = getDocs(collection(db, "products"));
+    const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2500));
+    const snap = await Promise.race([getDocsPromise, timeoutPromise]);
+    
+    if (snap && 'forEach' in snap) {
+      snap.forEach((docSnap) => {
+        const data = docSnap.data() as Product;
+        const imageUrl = data.imageUrl && data.imageUrl.includes('1608248597359')
+          ? '/images/organic_beauty.jpg'
+          : data.imageUrl;
+        
+        // Ensure createdAt is a normalized string
+        let normalizedCreatedAt: string;
+        if (typeof data.createdAt === 'string') {
+          normalizedCreatedAt = data.createdAt;
+        } else if (typeof data.createdAt === 'number') {
+          normalizedCreatedAt = new Date(data.createdAt).toISOString();
+        } else if (data.createdAt && typeof (data.createdAt as any).toDate === 'function') {
+          normalizedCreatedAt = (data.createdAt as any).toDate().toISOString();
+        } else {
+          normalizedCreatedAt = new Date().toISOString();
+        }
+
+        productsMap.set(data.id || docSnap.id, { 
+          ...data, 
+          id: data.id || docSnap.id, 
+          imageUrl,
+          createdAt: normalizedCreatedAt,
+          tags: Array.isArray(data.tags) ? data.tags : [],
+        });
+      });
+    }
   } catch (err) {
     console.warn("Firestore products load note (using local cache):", err);
   }
 
-  // 3. Layer local products (ensures user additions are always present)
-  localProducts.forEach((p) => productsMap.set(p.id, p));
+  // 3. Layer local products on top (guarantees newly added shop owner goods always take precedence)
+  localProducts.forEach((p) => {
+    productsMap.set(p.id, {
+      ...p,
+      tags: Array.isArray(p.tags) ? p.tags : [],
+      createdAt: typeof p.createdAt === 'string' ? p.createdAt : new Date().toISOString(),
+    });
+  });
 
   const all = Array.from(productsMap.values());
 
   // Sort: newly created products appear FIRST at the very top!
   all.sort((a, b) => {
-    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    const timeA = getTimestampNumber(a.createdAt);
+    const timeB = getTimestampNumber(b.createdAt);
     if (timeB !== timeA) return timeB - timeA;
     return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
   });

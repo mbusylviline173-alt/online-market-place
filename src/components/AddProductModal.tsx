@@ -19,7 +19,7 @@ import {
   Link,
   Loader2
 } from 'lucide-react';
-import { Product, ProductCategory, Shop } from '../types';
+import { Product, ProductCategory, Shop, HAIRSTYLE_STYLES_DATA, HairstyleStyle } from '../types';
 import { uploadProductImage, recordUploadedFile, auth } from '../services/firebase';
 import { compressAndOptimizeImage } from '../utils/imageCompressor';
 
@@ -27,6 +27,7 @@ interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddProduct: (product: Product) => void;
+  onViewMarketplace?: (product: Product) => void;
   shop: Shop;
 }
 
@@ -35,13 +36,68 @@ const PRESET_TEMPLATES = [
   {
     label: 'Bone Straight Wig',
     icon: '💇‍♀️',
-    title: 'Bone Straight Wig',
-    category: 'Fashion & Apparel' as ProductCategory,
-    price: 55000,
-    stock: 20,
-    description: '100% Virgin Human Hair Bone Straight Wig with pre-plucked HD lace frontal and silky natural gloss finish.',
+    title: 'Bone Straight 100% Virgin Hair HD Lace Wig (28 Inch)',
+    category: "Ladies' Hairstyles" as ProductCategory,
+    price: 68000,
+    stock: 15,
+    description: '100% Virgin Human Hair Bone Straight Wig with pre-plucked undetectable HD lace frontal and silky glass finish.',
     imageUrl: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=600&q=80',
-    tags: ['Bone Straight', 'Wig', 'Virgin Hair', 'HD Lace']
+    tags: ['Bone Straight Wigs', 'Bone Straight', 'Wig', 'Virgin Hair', 'HD Lace', 'Ladies Hairstyle']
+  },
+  {
+    label: 'Knotless Braids',
+    icon: '✨',
+    title: 'Bohemian Knotless Box Braids (Full Head Styling Pack)',
+    category: "Ladies' Hairstyles" as ProductCategory,
+    price: 35000,
+    stock: 15,
+    description: 'Tension-free lightweight knotless box braids with soft goddess curls at the ends. Gentle on scalp and edges.',
+    imageUrl: '/images/ladies_hairstyles.jpg',
+    tags: ['Knotless Box Braids', 'Knotless Braids', 'Bohemian', 'Goddess Curls', 'Ladies Hairstyle']
+  },
+  {
+    label: 'Passion Twists',
+    icon: '👑',
+    title: 'Caramel Honey Bohemian Passion Twists (Install Kit)',
+    category: "Ladies' Hairstyles" as ProductCategory,
+    price: 28000,
+    stock: 18,
+    description: 'Silky bohemian water-wave passion twists with bouncy spiral curl tips in warm honey espresso tones.',
+    imageUrl: '/images/passion_twists.jpg',
+    tags: ['Passion & Spring Twists', 'Passion Twists', 'Twists', 'Curls', 'Ladies Hairstyle']
+  },
+  {
+    label: 'HD Lace Frontal',
+    icon: '💎',
+    title: 'Melted Swiss HD Lace Frontal 13x6 (Body Wave)',
+    category: "Ladies' Hairstyles" as ProductCategory,
+    price: 38000,
+    stock: 14,
+    description: 'Ultra-thin, melt-into-skin 13x6 transparent Swiss HD lace frontal with tiny bleached micro-knots.',
+    imageUrl: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&w=600&q=80',
+    tags: ['HD Lace Frontals & Closures', 'HD Lace', 'Lace Frontal', 'Body Wave', 'Ladies Hairstyle']
+  },
+  {
+    label: 'Goddess Locs',
+    icon: '🌿',
+    title: 'Goddess Butterfly Bohemian Locs (26 Inch)',
+    category: "Ladies' Hairstyles" as ProductCategory,
+    price: 36000,
+    stock: 12,
+    description: 'Featherweight distressed bohemian butterfly faux locs wrapped with curly human hair tendrils.',
+    imageUrl: 'https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&w=600&q=80',
+    tags: ['Goddess & Bohemian Locs', 'Goddess Locs', 'Butterfly Locs', 'Locs', 'Ladies Hairstyle']
+  },
+  {
+    label: 'Sleek Ponytail',
+    icon: '🎀',
+    title: 'Sleek Wrap-Around Virgin Hair Ponytail (24 Inch)',
+    category: "Ladies' Hairstyles" as ProductCategory,
+    price: 24000,
+    stock: 20,
+    description: 'Instant glam drawstring wrap-around ponytail extension made with 100% human virgin hair with secure clip combs.',
+    imageUrl: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&w=600&q=80',
+    tags: ['Ponytails & Sleek Updos', 'Ponytail', 'Drawstring', 'Virgin Hair', 'Ladies Hairstyle']
   },
   {
     label: 'Dropper Bottle / Elixir',
@@ -51,7 +107,7 @@ const PRESET_TEMPLATES = [
     price: 22000,
     stock: 15,
     description: 'Cold-pressed botanical serum packaged in UV-protective amber glass bottle with precision glass dropper pipette.',
-    imageUrl: 'https://images.unsplash.com/photo-1608248597359-0a3598716b9b?auto=format&fit=crop&w=600&q=80',
+    imageUrl: '/images/organic_beauty.jpg',
     tags: ['Bottle', 'Elixir', 'Organic', 'Botanical']
   },
   {
@@ -66,17 +122,6 @@ const PRESET_TEMPLATES = [
     tags: ['Bottle', 'Raw Honey', 'Local', 'Artisan']
   },
   {
-    label: 'Olive Oil Bottle',
-    icon: '🫒',
-    title: 'Single-Estate Cold-Pressed Olive Oil Bottle (500ml)',
-    category: 'Artisanal Groceries' as ProductCategory,
-    price: 16000,
-    stock: 12,
-    description: 'First cold-pressed extra virgin olive oil harvested from heritage groves. Sealed in dark UV glass bottle.',
-    imageUrl: 'https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?auto=format&fit=crop&w=600&q=80',
-    tags: ['Bottle', 'Olive Oil', 'Culinary', 'Organic']
-  },
-  {
     label: 'Ceramic Stoneware',
     icon: '🏺',
     title: 'Hand-Thrown Speckled Stoneware Mug',
@@ -86,23 +131,13 @@ const PRESET_TEMPLATES = [
     description: 'Wheel-thrown ceramic mug with matte chalk glaze and raw terracotta base. Microwave and dishwasher safe.',
     imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80',
     tags: ['Ceramics', 'Handmade', 'Coffee', 'Stoneware']
-  },
-  {
-    label: 'Linen Apparel',
-    icon: '👕',
-    title: 'European Flax Relaxed Linen Tunic',
-    category: 'Fashion & Apparel' as ProductCategory,
-    price: 45000,
-    stock: 10,
-    description: 'Breathable stonewashed pure linen with clean French seams and natural shell buttons.',
-    imageUrl: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=600&q=80',
-    tags: ['Linen', 'Sustainable', 'Apparel']
   }
 ];
 
 const CATEGORIES: ProductCategory[] = [
   'Handmade & Crafts',
   'Fashion & Apparel',
+  "Ladies' Hairstyles",
   'Artisanal Groceries',
   'Organic Beauty',
   'Electronics & Gadgets',
@@ -113,10 +148,12 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
   isOpen,
   onClose,
   onAddProduct,
+  onViewMarketplace,
   shop,
 }) => {
   const [title, setTitle] = useState('Bone Straight Wig');
   const [category, setCategory] = useState<ProductCategory>(shop.category || 'Fashion & Apparel');
+  const [selectedHairstyleStyle, setSelectedHairstyleStyle] = useState<HairstyleStyle | null>('Bone Straight Wigs');
   const [price, setPrice] = useState('55000');
   const [originalPrice, setOriginalPrice] = useState('65000');
   const [stock, setStock] = useState('20');
@@ -137,6 +174,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
 
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [lastCreatedProduct, setLastCreatedProduct] = useState<Product | null>(null);
 
   if (!isOpen) return null;
 
@@ -261,7 +299,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     }
 
     if (isNaN(parsedPrice) || parsedPrice <= 0) {
-      setFormError('Please enter a valid price greater than 0 CFAF.');
+      setFormError('Please enter a valid price greater than 0 CFA.');
       return;
     }
 
@@ -271,7 +309,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
     }
 
     // Default image if blank
-    const finalImageUrl = imageUrl.trim() || 'https://images.unsplash.com/photo-1608248597359-0a3598716b9b?auto=format&fit=crop&w=600&q=80';
+    const finalImageUrl = imageUrl.trim() || '/images/organic_beauty.jpg';
 
     const tags = tagsInput
       .split(',')
@@ -432,11 +470,11 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label htmlFor="product-price" className="block text-xs font-bold text-slate-700 mb-1">
-                    Selling Price (CFAF) *
+                    Selling Price (CFA) *
                   </label>
                   <div className="relative flex items-center">
                     <span className="text-[10px] font-extrabold text-slate-400 absolute left-3 pointer-events-none">
-                      CFAF
+                      CFA
                     </span>
                     <input
                       id="product-price"
@@ -447,18 +485,18 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
                       placeholder="55000"
-                      className="w-full pl-14 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-indigo-600 outline-none"
+                      className="w-full pl-12 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-indigo-600 outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
                   <label htmlFor="product-original-price" className="block text-xs font-bold text-slate-700 mb-1">
-                    Original Price (CFAF) <span className="text-slate-400 font-normal">(Optional)</span>
+                    Original Price (CFA) <span className="text-slate-400 font-normal">(Optional)</span>
                   </label>
                   <div className="relative flex items-center">
                     <span className="text-[10px] font-extrabold text-slate-400 absolute left-3 pointer-events-none">
-                      CFAF
+                      CFA
                     </span>
                     <input
                       id="product-original-price"
@@ -468,7 +506,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                       value={originalPrice}
                       onChange={(e) => setOriginalPrice(e.target.value)}
                       placeholder="65000"
-                      className="w-full pl-14 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-indigo-600 outline-none"
+                      className="w-full pl-12 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-indigo-600 outline-none"
                     />
                   </div>
                 </div>
@@ -571,7 +609,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                               className="w-full h-full object-cover" 
                               referrerPolicy="no-referrer"
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1608248597359-0a3598716b9b?auto=format&fit=crop&w=600&q=80';
+                                (e.target as HTMLImageElement).src = '/images/organic_beauty.jpg';
                               }}
                             />
                             {isUploadingImage && (
@@ -689,7 +727,7 @@ export const AddProductModal: React.FC<AddProductModalProps> = ({
                             className="w-full h-full object-cover" 
                             referrerPolicy="no-referrer"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1608248597359-0a3598716b9b?auto=format&fit=crop&w=600&q=80';
+                              (e.target as HTMLImageElement).src = '/images/organic_beauty.jpg';
                             }}
                           />
                         </div>

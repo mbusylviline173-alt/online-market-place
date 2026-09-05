@@ -6,6 +6,7 @@ import {
   Sparkles, 
   Cpu, 
   Home, 
+  Scissors,
   ArrowRight,
   ShoppingBag
 } from 'lucide-react';
@@ -30,6 +31,8 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
         return <Apple className="w-6 h-6" />;
       case 'Sparkles':
         return <Sparkles className="w-6 h-6" />;
+      case 'Scissors':
+        return <Scissors className="w-6 h-6" />;
       case 'Cpu':
         return <Cpu className="w-6 h-6" />;
       case 'Home':
@@ -63,6 +66,13 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
           iconBg: 'bg-purple-100 text-purple-600',
           activeBg: 'bg-purple-600 text-white',
         };
+      case 'ladies-hairstyles':
+        return {
+          hoverBorder: 'hover:border-fuchsia-400',
+          accentText: 'text-fuchsia-600',
+          iconBg: 'bg-fuchsia-100 text-fuchsia-600',
+          activeBg: 'bg-fuchsia-600 text-white',
+        };
       case 'artisanal-groceries':
         return {
           hoverBorder: 'hover:border-emerald-400',
@@ -70,6 +80,7 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
           iconBg: 'bg-emerald-100 text-emerald-600',
           activeBg: 'bg-emerald-600 text-white',
         };
+      case 'beauty':
       case 'organic-beauty':
         return {
           hoverBorder: 'hover:border-rose-400',
@@ -152,6 +163,12 @@ export const CategoriesSection: React.FC<CategoriesSectionProps> = ({
                     alt={cat.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = cat.name === "Ladies' Hairstyles"
+                        ? '/images/ladies_hairstyles.jpg'
+                        : '/images/organic_beauty.jpg';
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-900/20 to-transparent" />
                   

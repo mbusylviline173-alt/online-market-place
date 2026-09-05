@@ -83,6 +83,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               src={product.imageUrl}
               alt={product.title}
               className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = product.category === 'Organic Beauty'
+                  ? '/images/organic_beauty.jpg'
+                  : product.category === "Ladies' Hairstyles"
+                  ? '/images/ladies_hairstyles.jpg'
+                  : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80';
+              }}
             />
             {product.discountPercent && (
               <div className="absolute top-4 left-4 bg-pink-500 text-white text-xs font-black px-3 py-1 rounded-full shadow-md flex items-center gap-1">
@@ -136,11 +144,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               {/* Price */}
               <div className="flex items-baseline gap-2 my-4">
                 <span className="text-3xl font-black text-indigo-600">
-                  {product.price.toLocaleString()} CFAF
+                  {product.price.toLocaleString()} CFA
                 </span>
                 {product.originalPrice && (
                   <span className="text-base text-slate-400 line-through">
-                    {product.originalPrice.toLocaleString()} CFAF
+                    {product.originalPrice.toLocaleString()} CFA
                   </span>
                 )}
               </div>
@@ -171,7 +179,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {product.freeLocalDelivery && (
                   <div className="flex items-center gap-2 text-slate-700">
                     <Truck className="w-4 h-4 text-pink-500 shrink-0" />
-                    <span><strong>Neighborhood Delivery:</strong> Free local drop-off on orders over 20,000 CFAF.</span>
+                    <span><strong>Neighborhood Delivery:</strong> Free local drop-off on orders over 20,000 CFA.</span>
                   </div>
                 )}
               </div>
@@ -232,8 +240,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <ShoppingBag className="w-4 h-4" />
                   <span>
                     {isBottleProduct 
-                      ? `Add / Reserve ${quantity} Bottle${quantity > 1 ? 's' : ''} (${(product.price * quantity).toLocaleString()} CFAF)`
-                      : `Add / Reserve Item (${(product.price * quantity).toLocaleString()} CFAF)`
+                      ? `Add / Reserve ${quantity} Bottle${quantity > 1 ? 's' : ''} (${(product.price * quantity).toLocaleString()} CFA)`
+                      : `Add / Reserve Item (${(product.price * quantity).toLocaleString()} CFA)`
                     }
                   </span>
                 </button>

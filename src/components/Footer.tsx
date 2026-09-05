@@ -138,6 +138,14 @@ export const Footer: React.FC<FooterProps> = ({
                   Zero-Waste Botanical Skincare
                 </button>
               </li>
+              <li>
+                <button
+                  onClick={() => onSelectCategory("Ladies' Hairstyles")}
+                  className="hover:text-pink-400 transition-colors"
+                >
+                  Ladies' Hairstyles, Braids & Wigs
+                </button>
+              </li>
             </ul>
           </div>
 

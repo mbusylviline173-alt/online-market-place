@@ -207,8 +207,13 @@ export const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
                     alt={product.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     loading="lazy"
+                    referrerPolicy="no-referrer"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80';
+                      (e.target as HTMLImageElement).src = product.category === 'Organic Beauty'
+                        ? '/images/organic_beauty.jpg'
+                        : product.category === "Ladies' Hairstyles"
+                        ? '/images/ladies_hairstyles.jpg'
+                        : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80';
                     }}
                   />
 
@@ -283,11 +288,11 @@ export const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
                     <div>
                       <div className="flex items-baseline gap-1.5">
                         <span className="text-xl font-extrabold text-indigo-600">
-                          {product.price.toLocaleString()} CFAF
+                          {product.price.toLocaleString()} CFA
                         </span>
                         {product.originalPrice && (
                           <span className="text-xs text-slate-400 line-through">
-                            {product.originalPrice.toLocaleString()} CFAF
+                            {product.originalPrice.toLocaleString()} CFA
                           </span>
                         )}
                       </div>

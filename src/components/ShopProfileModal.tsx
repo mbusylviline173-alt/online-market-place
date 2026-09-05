@@ -188,6 +188,14 @@ export const ShopProfileModal: React.FC<ShopProfileModalProps> = ({
                         alt={p.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = p.category === 'Organic Beauty'
+                            ? '/images/organic_beauty.jpg'
+                            : p.category === "Ladies' Hairstyles"
+                            ? '/images/ladies_hairstyles.jpg'
+                            : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80';
+                        }}
                       />
                       {p.discountPercent && (
                         <div className="absolute top-2 left-2 bg-pink-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs">
@@ -209,7 +217,7 @@ export const ShopProfileModal: React.FC<ShopProfileModalProps> = ({
 
                       <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
                         <span className="text-sm font-extrabold text-indigo-600">
-                          {p.price.toLocaleString()} CFAF
+                          {p.price.toLocaleString()} CFA
                         </span>
                         <button
                           type="button"

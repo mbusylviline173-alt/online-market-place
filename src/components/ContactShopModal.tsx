@@ -35,7 +35,7 @@ export const ContactShopModal: React.FC<ContactShopModalProps> = ({
   );
   const [message, setMessage] = useState(
     product
-      ? `Hi! I would like to reserve/order ${quantity} unit(s) of "${product.title}" (${(product.price * quantity).toLocaleString()} CFAF total). Is this ready for local pickup or neighborhood delivery?`
+      ? `Hi! I would like to reserve/order ${quantity} unit(s) of "${product.title}" (${(product.price * quantity).toLocaleString()} CFA total). Is this ready for local pickup or neighborhood delivery?`
       : ''
   );
   const [isSent, setIsSent] = useState(false);
@@ -112,12 +112,12 @@ export const ContactShopModal: React.FC<ContactShopModalProps> = ({
                     <span className="text-[10px] uppercase font-bold text-indigo-600 block">Item to reserve / order:</span>
                     <h4 className="font-bold text-slate-900 truncate">{product.title}</h4>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-slate-600 font-bold">{product.price.toLocaleString()} CFAF each</span>
+                      <span className="text-slate-600 font-bold">{product.price.toLocaleString()} CFA each</span>
                       <span className="text-[10px] font-bold px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-full">
                         Qty: {quantity}
                       </span>
                       <span className="text-indigo-600 font-extrabold text-xs ml-auto">
-                        Total: {(product.price * quantity).toLocaleString()} CFAF
+                        Total: {(product.price * quantity).toLocaleString()} CFA
                       </span>
                     </div>
                   </div>

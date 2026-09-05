@@ -540,7 +540,7 @@ export const ShopManagerDashboard: React.FC<ShopManagerDashboardProps> = ({
                             )}
                           </div>
                           <p className="text-[11px] text-slate-500 font-medium mt-0.5">
-                            {p.price.toLocaleString()} CFAF • {p.stock} in stock • {p.category}
+                            {p.price.toLocaleString()} CFA • {p.stock} in stock • {p.category}
                           </p>
                         </div>
                       </div>

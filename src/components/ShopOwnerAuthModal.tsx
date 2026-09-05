@@ -9,11 +9,12 @@ import {
   MapPin, 
   Phone, 
   CheckCircle2, 
-  ShieldCheck, 
   ArrowRight,
   Info,
   AlertCircle,
-  Loader2
+  Loader2,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { CATEGORIES_DATA } from '../data/mockData';
 import { 
@@ -50,6 +51,10 @@ export const ShopOwnerAuthModal: React.FC<ShopOwnerAuthModalProps> = ({
   const [shopPhone, setShopPhone] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
+
+  // Password visibility toggle states
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegPassword, setShowRegPassword] = useState(false);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -208,13 +213,27 @@ export const ShopOwnerAuthModal: React.FC<ShopOwnerAuthModalProps> = ({
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3 pointer-events-none" />
                   <input
                     id="owner-login-password"
-                    type="password"
+                    type={showLoginPassword ? "text" : "password"}
                     required
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none"
+                    className="w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-600/20 outline-none"
                   />
+                  <button
+                    type="button"
+                    id="toggle-login-password-visibility-btn"
+                    onClick={() => setShowLoginPassword((prev) => !prev)}
+                    className="absolute right-2.5 p-1 text-slate-400 hover:text-slate-700 focus:text-indigo-600 transition-colors cursor-pointer rounded-lg hover:bg-slate-200/60"
+                    aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                    title={showLoginPassword ? "Hide password" : "Show password"}
+                  >
+                    {showLoginPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -259,36 +278,142 @@ export const ShopOwnerAuthModal: React.FC<ShopOwnerAuthModalProps> = ({
                 )}
               </button>
 
-              {onAdminLogin && (
-                <div className="pt-1">
-                  <div className="relative flex py-2 items-center">
-                    <div className="flex-grow border-t border-slate-200"></div>
-                    <span className="flex-shrink mx-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                      Platform Administration
-                    </span>
-                    <div className="flex-grow border-t border-slate-200"></div>
-                  </div>
+              {/* 1-Click Quick Demo Sign-In for Shop Owners */}
+              <div className="pt-3 border-t border-slate-100">
+                <div className="flex items-center gap-2 mb-2.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    Instant Demo Login (Verified Merchants)
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    id="demo-login-crown-hairstyles"
+                    onClick={async () => {
+                      setIsLoading(true);
+                      setErrorMessage(null);
+                      try {
+                        const { user, profile } = await loginShopOwner('amara@crowncoiffure.com', 'demo123456');
+                        setIsLoading(false);
+                        onClose();
+                        if (onSuccess) onSuccess(user, profile);
+                      } catch (e: any) {
+                        setIsLoading(false);
+                        setErrorMessage("Could not sign in with demo account");
+                      }
+                    }}
+                    disabled={isLoading}
+                    className="p-2.5 bg-fuchsia-50 hover:bg-fuchsia-100 border border-fuchsia-200 rounded-xl text-left transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-fuchsia-900 group-hover:text-fuchsia-950">
+                        💇‍♀️ Crown & Coiffure
+                      </span>
+                      <span className="text-[9px] bg-fuchsia-200/80 text-fuchsia-800 px-1.5 py-0.5 rounded-full font-bold">
+                        Hairstyles
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-fuchsia-700 mt-0.5">
+                      Wigs, Braids & Hair Extensions
+                    </p>
+                  </button>
 
                   <button
                     type="button"
-                    id="admin-quick-login-btn"
-                    onClick={() => {
-                      onClose();
-                      onAdminLogin();
+                    id="demo-login-cedar-clay"
+                    onClick={async () => {
+                      setIsLoading(true);
+                      setErrorMessage(null);
+                      try {
+                        const { user, profile } = await loginShopOwner('maya.lin@cedarandclay.com', 'demo123456');
+                        setIsLoading(false);
+                        onClose();
+                        if (onSuccess) onSuccess(user, profile);
+                      } catch (e: any) {
+                        setIsLoading(false);
+                        setErrorMessage("Could not sign in with demo account");
+                      }
                     }}
-                    className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-indigo-300 hover:text-white rounded-2xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 border border-slate-700 shadow-md"
+                    disabled={isLoading}
+                    className="p-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl text-left transition-all cursor-pointer group"
                   >
-                    <ShieldCheck className="w-4 h-4 text-indigo-400" />
-                    <span>Sign In as Platform Admin ({'PVJI9q...ZYvE3'})</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-amber-900 group-hover:text-amber-950">
+                        🏺 Cedar & Clay Studio
+                      </span>
+                      <span className="text-[9px] bg-amber-200/80 text-amber-800 px-1.5 py-0.5 rounded-full font-bold">
+                        Crafts
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-amber-700 mt-0.5">
+                      Ceramics & Earthen Homewares
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    id="demo-login-verdant-apothecary"
+                    onClick={async () => {
+                      setIsLoading(true);
+                      setErrorMessage(null);
+                      try {
+                        const { user, profile } = await loginShopOwner('elena@verdantapothecary.org', 'demo123456');
+                        setIsLoading(false);
+                        onClose();
+                        if (onSuccess) onSuccess(user, profile);
+                      } catch (e: any) {
+                        setIsLoading(false);
+                        setErrorMessage("Could not sign in with demo account");
+                      }
+                    }}
+                    disabled={isLoading}
+                    className="p-2.5 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl text-left transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-rose-900 group-hover:text-rose-950">
+                        🌿 Verdant Apothecary
+                      </span>
+                      <span className="text-[9px] bg-rose-200/80 text-rose-800 px-1.5 py-0.5 rounded-full font-bold">
+                        Beauty
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-rose-700 mt-0.5">
+                      Botanical Skincare & Oils
+                    </p>
+                  </button>
+
+                  <button
+                    type="button"
+                    id="demo-login-golden-harvest"
+                    onClick={async () => {
+                      setIsLoading(true);
+                      setErrorMessage(null);
+                      try {
+                        const { user, profile } = await loginShopOwner('marcus@goldenharvestbread.com', 'demo123456');
+                        setIsLoading(false);
+                        onClose();
+                        if (onSuccess) onSuccess(user, profile);
+                      } catch (e: any) {
+                        setIsLoading(false);
+                        setErrorMessage("Could not sign in with demo account");
+                      }
+                    }}
+                    disabled={isLoading}
+                    className="p-2.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-left transition-all cursor-pointer group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-emerald-900 group-hover:text-emerald-950">
+                        🥖 Golden Harvest Bakery
+                      </span>
+                      <span className="text-[9px] bg-emerald-200/80 text-emerald-800 px-1.5 py-0.5 rounded-full font-bold">
+                        Groceries
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-emerald-700 mt-0.5">
+                      Artisan Breads & Local Honey
+                    </p>
                   </button>
                 </div>
-              )}
-
-              <div className="p-3.5 bg-indigo-50/70 rounded-2xl border border-indigo-100 flex items-start gap-2 text-[11px] text-indigo-950 font-normal">
-                <Info className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
-                <span>
-                  <strong>Firebase Authentication Active:</strong> Sign in with your registered email and password. New merchant registrations require administrator approval.
-                </span>
               </div>
             </form>
           ) : (
@@ -418,13 +543,27 @@ export const ShopOwnerAuthModal: React.FC<ShopOwnerAuthModalProps> = ({
                     <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 pointer-events-none" />
                     <input
                       id="reg-shop-password"
-                      type="password"
+                      type={showRegPassword ? "text" : "password"}
                       required
                       value={regPassword}
                       onChange={(e) => setRegPassword(e.target.value)}
                       placeholder="Minimum 6 characters"
-                      className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-indigo-600 outline-none"
+                      className="w-full pl-8 pr-10 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:bg-white focus:border-indigo-600 outline-none"
                     />
+                    <button
+                      type="button"
+                      id="toggle-reg-password-visibility-btn"
+                      onClick={() => setShowRegPassword((prev) => !prev)}
+                      className="absolute right-2.5 p-1 text-slate-400 hover:text-slate-700 focus:text-indigo-600 transition-colors cursor-pointer rounded-lg hover:bg-slate-200/60"
+                      aria-label={showRegPassword ? "Hide password" : "Show password"}
+                      title={showRegPassword ? "Hide password" : "Show password"}
+                    >
+                      {showRegPassword ? (
+                        <EyeOff className="w-3.5 h-3.5" />
+                      ) : (
+                        <Eye className="w-3.5 h-3.5" />
+                      )}
+                    </button>
                   </div>
                 </div>
               </div>

@@ -103,6 +103,12 @@ export const ShopsShowcase: React.FC<ShopsShowcaseProps> = ({
                     alt={`${shop.name} banner`}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    referrerPolicy="no-referrer"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = shop.category === "Ladies' Hairstyles"
+                        ? '/images/ladies_hairstyles.jpg'
+                        : '/images/organic_beauty.jpg';
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
                   
