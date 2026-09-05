@@ -1,0 +1,80 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role, shop details, approval status, and file count",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "shop_owner", "shopper", "guest"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "banned"] },
+        "ownerName": { "type": "string" },
+        "shopName": { "type": "string" },
+        "shopCategory": { "type": "string" },
+        "phone": { "type": "string" },
+        "address": { "type": "string" },
+        "fileCount": { "type": "number" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "File": {
+      "title": "File",
+      "description": "Uploaded file metadata associated with a user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "fileName": { "type": "string" },
+        "fileSize": { "type": "number" },
+        "fileType": { "type": "string" },
+        "downloadUrl": { "type": "string" },
+        "purpose": { "type": "string" },
+        "associatedProductId": { "type": "string" }
+      },
+      "required": ["id", "userId", "fileName", "downloadUrl"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Storefront product listed by a merchant on the marketplace",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "shopId": { "type": "string" },
+        "shopName": { "type": "string" },
+        "shopLogo": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "number" },
+        "originalPrice": { "type": "number" },
+        "discountPercent": { "type": "number" },
+        "category": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "stock": { "type": "number" },
+        "rating": { "type": "number" },
+        "reviewCount": { "type": "number" },
+        "isFeatured": { "type": "boolean" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "pickupAvailable": { "type": "boolean" },
+        "freeLocalDelivery": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "shopId", "shopName", "title", "price", "category", "imageUrl"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Stores user profiles with admin control and approval status"
+    },
+    "/files/{fileId}": {
+      "schema": "File",
+      "description": "Stores uploaded file metadata with ownership and admin privileges"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Public catalog products listed by merchants and featured in the main marketplace"
+    }
+  }
+}
